@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barlangász teszt</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <h1>Barlangász teszt</h1>
+        <span class="pill" id="counter">Kérdés 0 / 0</span>
+      </div>
+
+      <div class="row" style="justify-content: space-between;">
+        <div class="row">
+          <span class="badge" id="qStatus">—</span>
+          <span class="pill" id="globalStats">—</span>
+        </div>
+
+        <div class="row">
+          <label class="pill">
+            Mód:&nbsp;
+            <select id="modeSelect">
+              <option value="spaced" selected>Spaced repetition</option>
+              <option value="random">Pure random</option>
+            </select>
+          </label>
+
+          <label class="pill">
+            Kérdéskör:&nbsp;
+            <select id="poolSelect">
+              <option value="all" selected>Összes</option>
+              <option value="review">Csak ami hibás volt</option>
+            </select>
+          </label>
+
+          <label class="pill">
+            Szekció:&nbsp;
+            <select id="sectionSelect">
+              <option value="" selected>Összes</option>
+            </select>
+          </label>
+
+          <button class="btn btn--md" id="btnNext">Következő</button>
+        </div>
+      </div>
+
+      <div class="q" id="questionText">—</div>
+
+      <textarea id="userAnswer" placeholder="Ide írd a válaszod... (Ctrl+Enter = ellenőrzés)"></textarea>
+
+      <div class="row" style="margin-top: 10px;">
+        <button class="btn btn--md" id="btnCheck">Ellenőrzés</button>
+        <button class="btn btn--md btn--ghost" id="btnHint">Hint: 1 hiányzó kulcsszó</button>
+        <button class="btn btn--md btn--ghost" id="btnShow">Válasz mutatása</button>
+        <button class="btn btn--md btn--ghost" id="btnClear">Törlés</button>
+      </div>
+
+      <div class="grid">
+        <div class="box"><h3>Megvan</h3><div class="list" id="foundList"></div></div>
+        <div class="box"><h3>Hiányzik</h3><div class="list" id="missingList"></div></div>
+      </div>
+
+      <div class="footer">
+        <div class="small">Tipp: Hint mindig a <b>következő</b> hiányzó kulcsszót fedi fel.</div>
+        <div class="score" id="scoreText">Pont: —</div>
+      </div>
+
+      <div class="answer" id="refAnswerBox"></div>
+
+      <hr class="sep">
+
+      <div class="row" style="justify-content: space-between;">
+        <div class="muted">Adatok csak ezen az eszközön (localStorage).</div>
+        <div class="row">
+          <button class="btn btn--sm btn--ghost" id="btnResetProgress">Progress törlése</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./qa.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./layout.js"></script>
+  <script>
+    const QA = App.getQA().slice();
+    const progress = App.loadProgress();
+
+    const WHOLE_WORD_MATCH = true;
+    const STRIP_ACCENTS = true;
+
+    let currentItem = null;
+    let lastScore = null;
+    let hintIndex = 0;
+
+    function renderTags(container, items, cssClass){
+      container.innerHTML = "";
+      if (!items.length){
+        const s=document.createElement("span"); s.className="muted"; s.textContent="—"; container.appendChild(s);
+        return;
+      }
+      for (const it of items){
+        const tag=document.createElement("span");
+        tag.className="tag " + cssClass;
+        tag.textContent=it;
+        container.appendChild(tag);
+      }
+    }
+
+    function inferSectionFromId(id){
+      const m = String(id||"").match(/^([A-Za-z0-9]+)\//);
+      return m ? m[1] : null;
+    }
+
+    function getAllSections(){
+      const set = new Set();
+      for (const q of QA){
+        for (const t of (q.tags || [])){
+          if (typeof t === "string" && t.length <= 8) set.add(t);
+        }
+        const sid = inferSectionFromId(q.id);
+        if (sid) set.add(sid);
+      }
+      // roman-ish sort
+      const rank = (s) => {
+        const map = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7, VIII:8, IX:9, X:10 };
+        return map[s] ?? 999;
+      };
+      return Array.from(set).sort((a,b)=>{
+        const ra = rank(a), rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        return a.localeCompare(b,"hu");
+      });
+    }
+
+    function fillSectionSelect(){
+      const sel = document.getElementById("sectionSelect");
+      const cur = sel.value || "";
+      sel.innerHTML = `<option value="">Összes</option>`;
+      const secs = getAllSections();
+      for (const s of secs){
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        sel.appendChild(opt);
+      }
+      sel.value = secs.includes(cur) ? cur : "";
+    }
+
+    function poolItems(){
+      const all = QA.slice();
+      const pool = document.getElementById("poolSelect").value;
+      const section = document.getElementById("sectionSelect").value;
+
+      let items = all;
+
+      if (section){
+        items = items.filter(q => {
+          const byTag = (q.tags || []).includes(section);
+          const byId = inferSectionFromId(q.id) === section;
+          return byTag || byId;
+        });
+      }
+
+      if (pool === "review"){
+        items = items.filter(q => {
+          const rec = progress[q.id];
+          if (!rec) return true;
+          const miss = (rec.lastMissing || []).length;
+          const last = rec.lastPct ?? 0;
+          return miss > 0 || last < App.MASTERY_PCT;
+        });
+      }
+
+      return items;
+    }
+
+    function pickNext(){
+      const items = poolItems();
+      if (!items.length) return null;
+
+      const mode = document.getElementById("modeSelect").value;
+      if (mode === "random"){
+        return items[Math.floor(Math.random() * items.length)];
+      }
+      return App.weightedPick(items, it => App.computeWeight(progress, it.id));
+    }
+
+    function updateGlobalStats(){
+      const items = poolItems();
+      let mastered = 0;
+      for (const q of items){
+        if (progress[q.id]?.mastered) mastered++;
+      }
+      document.getElementById("globalStats").textContent = `Mastered: ${mastered}/${items.length}`;
+    }
+
+    function updateQuestionStatus(){
+      const badge = document.getElementById("qStatus");
+      if (!currentItem) { badge.textContent = "—"; badge.className = "badge"; return; }
+
+      const rec = progress[currentItem.id];
+      if (!rec){
+        badge.textContent = "Új kérdés";
+        badge.className = "badge";
+        return;
+      }
+      if (rec.mastered){
+        badge.textContent = `Mastered (best ${rec.bestPct}%)`;
+        badge.className = "badge ok";
+      } else {
+        badge.textContent = `Needs work (best ${rec.bestPct}%, last ${rec.lastPct ?? "—"}%)`;
+        badge.className = "badge bad";
+      }
+    }
+
+    function loadQuestion(){
+      currentItem = pickNext();
+      if (!currentItem){
+        document.getElementById("questionText").textContent = "Nincs kérdés ebben a kérdéskörben.";
+        return;
+      }
+
+      document.getElementById("questionText").textContent = `${currentItem.id}\n${currentItem.q}`;
+      document.getElementById("userAnswer").value = "";
+      document.getElementById("refAnswerBox").style.display = "none";
+      document.getElementById("refAnswerBox").textContent = "";
+      renderTags(document.getElementById("foundList"), [], "ok");
+      renderTags(document.getElementById("missingList"), [], "bad");
+
+      const scoreEl = document.getElementById("scoreText");
+      scoreEl.textContent = "Pont: —";
+      scoreEl.className = "score";
+
+      hintIndex = 0;
+      lastScore = null;
+
+      const items = poolItems();
+      const idx = items.findIndex(x => x.id === currentItem.id);
+      document.getElementById("counter").textContent = `Kérdés ${Math.max(1, idx+1)} / ${items.length}`;
+
+      updateQuestionStatus();
+      updateGlobalStats();
+    }
+
+    function check(){
+      if (!currentItem) return;
+
+      const txt = document.getElementById("userAnswer").value;
+      const score = App.scoreAnswer(currentItem, txt, { wholeWord: WHOLE_WORD_MATCH, stripAccents: STRIP_ACCENTS });
+      lastScore = score;
+      hintIndex = 0;
+
+      renderTags(document.getElementById("foundList"), score.found, "ok");
+      renderTags(document.getElementById("missingList"), score.missing, "bad");
+
+      const scoreEl = document.getElementById("scoreText");
+      scoreEl.textContent = `Pont: ${score.got}/${score.total} (${score.pct}%)`;
+      scoreEl.className = "score " + (score.pct >= App.MASTERY_PCT ? "ok" : "bad");
+
+      App.updateProgress(progress, currentItem.id, score);
+      updateQuestionStatus();
+      updateGlobalStats();
+    }
+
+    function hint(){
+      if (!currentItem) return;
+
+      const txt = document.getElementById("userAnswer").value;
+      const score = lastScore || App.scoreAnswer(currentItem, txt, { wholeWord: WHOLE_WORD_MATCH, stripAccents: STRIP_ACCENTS });
+
+      if (!score.missing.length) {
+        alert("Nincs hiányzó kulcsszó (vagy még nem definiáltál kulcsszavakat).");
+        return;
+      }
+
+      const kw = score.missing[Math.min(hintIndex, score.missing.length - 1)];
+      hintIndex++;
+
+      alert(`Hint: próbáld beleírni ezt a fogalmat:\n\n• ${kw}`);
+    }
+
+    function showAnswer(){
+      if (!currentItem) return;
+      const box = document.getElementById("refAnswerBox");
+      const vis = box.style.display === "block";
+      if (vis) { box.style.display = "none"; return; }
+      box.textContent = currentItem.a || "";
+      box.style.display = "block";
+    }
+
+    function clearAnswer(){
+      document.getElementById("userAnswer").value = "";
+      renderTags(document.getElementById("foundList"), [], "ok");
+      renderTags(document.getElementById("missingList"), [], "bad");
+      const el = document.getElementById("scoreText");
+      el.textContent="Pont: —"; el.className="score";
+      document.getElementById("refAnswerBox").style.display="none";
+      lastScore = null;
+      hintIndex = 0;
+    }
+
+    function resetProgress(){
+      if (!confirm("Biztosan törlöd az összes progress adatot ezen az eszközön?")) return;
+      localStorage.removeItem(App.PROGRESS_KEY);
+      location.reload();
+    }
+
+    document.getElementById("btnNext").addEventListener("click", loadQuestion);
+    document.getElementById("btnCheck").addEventListener("click", check);
+    document.getElementById("btnHint").addEventListener("click", hint);
+    document.getElementById("btnShow").addEventListener("click", showAnswer);
+    document.getElementById("btnClear").addEventListener("click", clearAnswer);
+    document.getElementById("btnResetProgress").addEventListener("click", resetProgress);
+
+    document.getElementById("userAnswer").addEventListener("keydown", (e)=> {
+      if (e.ctrlKey && e.key === "Enter") check();
+    });
+    document.getElementById("modeSelect").addEventListener("change", loadQuestion);
+    document.getElementById("poolSelect").addEventListener("change", loadQuestion);
+    document.getElementById("sectionSelect").addEventListener("change", loadQuestion);
+
+    // init
+    fillSectionSelect();
+    loadQuestion();
+  </script>
+</body>
+</html>

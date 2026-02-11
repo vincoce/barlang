@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tanuló mód</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    details{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:10px 12px; }
+    summary{ cursor:pointer; font-weight:700; color:var(--text); }
+    pre{ white-space:pre-wrap; margin:10px 0 0; color:var(--text); }
+    .listcol{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <h1>Tanuló mód</h1>
+          <div class="muted">Szűrés: keresés + tag, majd kérdésre kattintva válasz.</div>
+        </div>
+        <div class="row">
+          <span class="pill" id="countPill">0 kérdés</span>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 10px; justify-content: space-between;">
+        <div class="row">
+          <input id="searchBox" type="text" placeholder="Keresés (kérdés/válasz/id)..." style="min-width: 280px;">
+          <label class="pill">
+            Tag:&nbsp;
+            <select id="tagSelect">
+              <option value="">(összes)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <button class="btn btn--sm btn--ghost" id="btnOrdered">Sorrendben</button>
+          <button class="btn btn--sm btn--ghost" id="btnRandom">Random</button>
+          <button class="btn btn--sm btn--ghost" id="btnToggleAnswers">Válaszok: mutat</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn--sm btn--ghost" id="btnCopyOrdered">Q&A másolás (sorrend)</button>
+        <button class="btn btn--sm btn--ghost" id="btnCopyRandom">Q&A másolás (random)</button>
+        <span class="small">Tipp: ezt be tudod dobni jegyzetbe / telefonra.</span>
+      </div>
+
+      <div class="listcol" id="qaList"></div>
+    </div>
+  </div>
+
+  <script src="./qa.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./layout.js"></script>
+  <script>
+    const QA = App.getQA().slice();
+    const progress = App.loadProgress();
+
+    const qaList = document.getElementById("qaList");
+    const countPill = document.getElementById("countPill");
+    const searchBox = document.getElementById("searchBox");
+    const tagSelect = document.getElementById("tagSelect");
+
+    let showAnswers = true;
+    let orderedMode = true;
+
+    function fillTags(){
+      tagSelect.innerHTML = `<option value="">(összes)</option>`;
+      const tags = App.uniqueTags(QA);
+      for (const t of tags){
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        tagSelect.appendChild(opt);
+      }
+    }
+
+    function matches(item, q, tag){
+      if (tag && !(item.tags || []).includes(tag)) return false;
+      if (!q) return true;
+
+      const hay = App.normalizeText(`${item.id} ${item.q} ${item.a}`);
+      const needle = App.normalizeText(q);
+      return hay.includes(needle);
+    }
+
+    function listFiltered(){
+      const q = searchBox.value || "";
+      const tag = tagSelect.value || "";
+      let list = QA.filter(x => matches(x, q, tag));
+
+      if (orderedMode) {
+        list = list.slice().sort((a,b)=>(a.id||"").localeCompare(b.id||"","hu"));
+      } else {
+        list = App.shuffle(list);
+      }
+      return list;
+    }
+
+    function render(){
+      const list = listFiltered();
+      qaList.innerHTML = "";
+      countPill.textContent = `${list.length} kérdés`;
+
+      for (const item of list){
+        const d = document.createElement("details");
+
+        const s = document.createElement("summary");
+        const rec = progress[item.id];
+        const badge = rec?.mastered ? " ✅" : (rec?.attempts ? " ⚠️" : " 🆕");
+        s.textContent = `${item.id} – ${item.q}${badge}`;
+        d.appendChild(s);
+
+        const pre = document.createElement("pre");
+        pre.textContent = showAnswers ? (item.a || "") : "Válasz elrejtve.";
+        d.appendChild(pre);
+
+        const tagLine = document.createElement("div");
+        tagLine.className = "small";
+        const tags = (item.tags || []).join(", ");
+        tagLine.textContent = tags ? `Tag-ek: ${tags}` : "";
+        tagLine.style.marginTop = "8px";
+        d.appendChild(tagLine);
+
+        qaList.appendChild(d);
+      }
+    }
+
+    async function copyText(text){
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Kimásolva a vágólapra.");
+      } catch {
+        prompt("Másold ki innen:", text);
+      }
+    }
+
+    document.getElementById("btnOrdered").addEventListener("click", () => { orderedMode = true; render(); });
+    document.getElementById("btnRandom").addEventListener("click", () => { orderedMode = false; render(); });
+    document.getElementById("btnToggleAnswers").addEventListener("click", () => {
+      showAnswers = !showAnswers;
+      document.getElementById("btnToggleAnswers").textContent = `Válaszok: ${showAnswers ? "mutat" : "rejt"}`;
+      render();
+    });
+
+    searchBox.addEventListener("input", render);
+    tagSelect.addEventListener("change", render);
+
+    document.getElementById("btnCopyOrdered").addEventListener("click", () => copyText(App.exportText(QA, true)));
+    document.getElementById("btnCopyRandom").addEventListener("click", () => copyText(App.exportText(QA, false)));
+
+    fillTags();
+    render();
+  </script>
+</body>
+</html>

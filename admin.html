@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kérdésbank szerkesztő</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .two{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    @media (max-width:900px){ .two{ grid-template-columns:1fr; } }
+    .field label{ display:block; margin:8px 0 6px; color:var(--muted); font-size:13px; }
+    .field input, .field textarea, .field select { width:100%; }
+    .field textarea{ min-height:110px; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .listcol{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+    .itemRow{ border:1px solid var(--line); background:var(--surface); border-radius:12px; padding:10px 12px; }
+    .itemTop{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center; }
+    .itemTitle{ font-weight:700; }
+    .btnSmall{ padding:6px 10px; border-radius:10px; }
+    .kwWrap{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <h1>Kérdésbank szerkesztő</h1>
+          <div class="muted">Mentés: localStorage. Bulk import + auto-ID + keyword javaslat.</div>
+        </div>
+        <span class="pill" id="countPill">0</span>
+      </div>
+
+      <div class="two" style="margin-top:12px;">
+        <div class="box">
+          <h3>Új / szerkesztés</h3>
+
+          <div class="row" style="justify-content: space-between; margin-bottom:6px;">
+            <span class="pill">Auto-ID</span>
+            <div class="row">
+              <select id="idPrefix"></select>
+              <select id="idPad">
+                <option value="0">no pad</option>
+                <option value="2" selected>01</option>
+                <option value="3">001</option>
+              </select>
+              <button class="btn btn--sm btn--ghost" id="btnGenId">Következő ID</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>ID</label>
+            <input id="idInput" type="text" placeholder="III/01">
+          </div>
+
+          <div class="field">
+            <label>Tag-ek (vesszővel elválasztva)</label>
+            <input id="tagsInput" type="text" placeholder="III, biztosítás">
+          </div>
+
+          <div class="field">
+            <label>Kérdés</label>
+            <textarea id="qInput" placeholder="Kérdés..."></textarea>
+          </div>
+
+          <div class="field">
+            <label>Válasz</label>
+            <textarea id="aInput" placeholder="Válasz..."></textarea>
+          </div>
+
+          <div class="row" style="justify-content: space-between; margin-top:10px;">
+            <span class="pill">Kulcsszó helper</span>
+            <div class="row">
+              <button class="btn btn--sm btn--ghost" id="btnSuggestKw">Javaslatok</button>
+              <button class="btn btn--sm btn--ghost" id="btnClearKw">Ürítés</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Kulcsszavak (1 sor = 1, szinonimák: | )</label>
+            <textarea id="kwInput" class="mono" placeholder="nemzeti park|nemzeti parktól
+kérelem|engedély
+aláírás|jogosult"></textarea>
+            <div class="kwWrap" id="kwChips"></div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn btn--md" id="btnSave">Mentés</button>
+            <button class="btn btn--md btn--ghost" id="btnNew">Új</button>
+            <button class="btn btn--md btn--ghost" id="btnDelete">Törlés (ID)</button>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn btn--sm btn--ghost" id="btnExport">Export (USER JSON)</button>
+            <button class="btn btn--sm btn--ghost" id="btnImport">Import (USER JSON)</button>
+          </div>
+
+          <hr class="sep">
+
+          <h3>Bulk paste → preview → import</h3>
+          <div class="muted">Támogatott: <code>II:</code> külön sorban + <code>1. Kérdés</code> sorok.</div>
+
+          <div class="row" style="margin-top:8px;">
+            <select id="bulkDefaultPrefix"></select>
+            <select id="bulkPad">
+              <option value="0">no pad</option>
+              <option value="2" selected>01</option>
+              <option value="3">001</option>
+            </select>
+            <button class="btn btn--sm btn--ghost" id="btnBulkPreview">Preview</button>
+            <button class="btn btn--sm" id="btnBulkImport">Import preview</button>
+          </div>
+
+          <textarea id="bulkInput" class="mono" placeholder="II:
+1. Kérdés?
+Válasz
+
+III:
+1. Másik?
+Válasz"></textarea>
+
+          <div class="small" id="bulkInfo">—</div>
+          <div class="listcol" id="bulkPreview"></div>
+        </div>
+
+        <div class="box">
+          <h3>Lista</h3>
+          <div class="row" style="justify-content: space-between;">
+            <input id="filterInput" type="text" placeholder="Keresés (id/kérdés)...">
+          </div>
+          <div class="listcol" id="list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./qa.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./layout.js"></script>
+  <script>
+    const idInput = document.getElementById("idInput");
+    const tagsInput = document.getElementById("tagsInput");
+    const qInput = document.getElementById("qInput");
+    const aInput = document.getElementById("aInput");
+    const kwInput = document.getElementById("kwInput");
+    const kwChips = document.getElementById("kwChips");
+
+    const idPrefix = document.getElementById("idPrefix");
+    const idPad = document.getElementById("idPad");
+
+    const filterInput = document.getElementById("filterInput");
+    const listDiv = document.getElementById("list");
+    const countPill = document.getElementById("countPill");
+
+    const bulkInput = document.getElementById("bulkInput");
+    const bulkPreviewDiv = document.getElementById("bulkPreview");
+    const bulkInfo = document.getElementById("bulkInfo");
+    const bulkDefaultPrefix = document.getElementById("bulkDefaultPrefix");
+    const bulkPad = document.getElementById("bulkPad");
+    let bulkItems = [];
+
+    function parseKeywords(text){
+      const lines = (text || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+      return lines.map(line => {
+        const parts = line.split("|").map(x => x.trim()).filter(Boolean);
+        return parts.length > 1 ? parts : parts[0];
+      });
+    }
+    function keywordsToText(keywords){
+      if (!keywords || !keywords.length) return "";
+      return keywords.map(kw => Array.isArray(kw) ? kw.join("|") : kw).join("\n");
+    }
+
+    function getFormItem(){
+      const id = (idInput.value || "").trim();
+      if (!id) throw new Error("ID kötelező.");
+      const tags = (tagsInput.value || "").split(",").map(t => t.trim()).filter(Boolean);
+      return {
+        id,
+        tags,
+        q: (qInput.value || "").trim(),
+        a: (aInput.value || "").trim(),
+        keywords: parseKeywords(kwInput.value)
+      };
+    }
+    function setFormItem(item){
+      idInput.value = item?.id || "";
+      tagsInput.value = (item?.tags || []).join(", ");
+      qInput.value = item?.q || "";
+      aInput.value = item?.a || "";
+      kwInput.value = keywordsToText(item?.keywords || []);
+      renderKwChips([]);
+    }
+    function clearForm(){
+      setFormItem({ id:"", tags:[], q:"", a:"", keywords:[] });
+    }
+
+    function renderKwChips(suggestions){
+      kwChips.innerHTML = "";
+      for (const s of suggestions){
+        const chip = document.createElement("span");
+        chip.className = "tag ok";
+        chip.style.cursor = "pointer";
+        chip.title = "Katt: hozzáadás kulcsszavakhoz";
+        chip.textContent = s;
+        chip.addEventListener("click", () => {
+          const txt = kwInput.value.trim();
+          kwInput.value = txt ? (txt + "\n" + s) : s;
+        });
+        kwChips.appendChild(chip);
+      }
+      if (!suggestions.length){
+        const m = document.createElement("span");
+        m.className = "muted";
+        m.textContent = "—";
+        kwChips.appendChild(m);
+      }
+    }
+
+    function inferPrefixFromId(id){
+      const m = String(id||"").match(/^(.+\/)\d+$/);
+      return m ? m[1] : null;
+    }
+
+    function getAllPrefixes(){
+      const all = App.getQA();
+      const set = new Set();
+      for (const q of all){
+        const p = inferPrefixFromId(q.id);
+        if (p) set.add(p);
+      }
+      if (!set.size) ["I/","II/","III/"].forEach(x => set.add(x));
+
+      const rank = (p) => {
+        const s = p.replace("/","");
+        const map = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7, VIII:8, IX:9, X:10 };
+        return map[s] ?? 999;
+      };
+
+      return Array.from(set).sort((a,b) => {
+        const ra = rank(a), rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        return a.localeCompare(b, "hu");
+      });
+    }
+
+    function fillPrefixSelects(){
+      const prefixes = getAllPrefixes();
+
+      function fill(selId, preferred){
+        const sel = document.getElementById(selId);
+        const current = sel.value || "";
+        sel.innerHTML = "";
+        for (const p of prefixes){
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          sel.appendChild(opt);
+        }
+        if (preferred && prefixes.includes(preferred)) sel.value = preferred;
+        else if (prefixes.includes(current)) sel.value = current;
+        else sel.value = prefixes[0] || "III/";
+      }
+
+      fill("idPrefix", "III/");
+      fill("bulkDefaultPrefix", "III/");
+    }
+
+    function renderList(){
+      const all = App.getQA();
+      const userOnly = App.loadUserQA();
+      const userIds = new Set(userOnly.map(x => x.id));
+      const f = App.normalizeText(filterInput.value || "");
+
+      const list = all.slice()
+        .sort((a,b)=>(a.id||"").localeCompare(b.id||"","hu"))
+        .filter(x => !f || App.normalizeText(`${x.id} ${x.q}`).includes(f));
+
+      countPill.textContent = `${list.length} db`;
+      listDiv.innerHTML = "";
+
+      for (const item of list){
+        const row = document.createElement("div");
+        row.className = "itemRow";
+
+        const top = document.createElement("div");
+        top.className = "itemTop";
+
+        const title = document.createElement("div");
+        title.className = "itemTitle";
+        title.textContent = `${item.id} – ${item.q || "(nincs kérdés)"}`;
+
+        const right = document.createElement("div");
+        right.className = "row";
+
+        const origin = document.createElement("span");
+        origin.className = "badge " + (userIds.has(item.id) ? "ok" : "");
+        origin.textContent = userIds.has(item.id) ? "USER" : "DEFAULT";
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn--sm btn--ghost";
+        btnEdit.textContent = "Szerkeszt";
+        btnEdit.addEventListener("click", () => setFormItem(item));
+
+        right.appendChild(origin);
+        right.appendChild(btnEdit);
+
+        top.appendChild(title);
+        top.appendChild(right);
+
+        const meta = document.createElement("div");
+        meta.className = "small";
+        meta.textContent = (item.tags && item.tags.length) ? `Tag-ek: ${item.tags.join(", ")}` : "";
+
+        row.appendChild(top);
+        row.appendChild(meta);
+        listDiv.appendChild(row);
+      }
+    }
+
+    async function copyText(text){
+      try { await navigator.clipboard.writeText(text); alert("Kimásolva."); }
+      catch { prompt("Másold ki innen:", text); }
+    }
+
+    document.getElementById("btnGenId").addEventListener("click", () => {
+      const prefix = idPrefix.value;
+      const pad = parseInt(idPad.value, 10) || 0;
+      const next = App.nextId(prefix, App.getQA(), pad);
+      idInput.value = next;
+
+      if (!(tagsInput.value || "").trim()){
+        tagsInput.value = prefix.replace("/","");
+      }
+    });
+
+    document.getElementById("btnSuggestKw").addEventListener("click", () => {
+      const a = (aInput.value || "").trim();
+      if (!a) return alert("Előbb írj választ.");
+      const sugg = App.suggestKeywords(a, 15);
+      renderKwChips(sugg);
+    });
+
+    document.getElementById("btnClearKw").addEventListener("click", () => {
+      kwInput.value = "";
+      renderKwChips([]);
+    });
+
+    document.getElementById("btnSave").addEventListener("click", () => {
+      try {
+        App.upsertUserItem(getFormItem());
+        renderList();
+        fillPrefixSelects();
+        alert("Mentve.");
+      } catch (e) {
+        alert(e.message || String(e));
+      }
+    });
+
+    document.getElementById("btnNew").addEventListener("click", clearForm);
+
+    document.getElementById("btnDelete").addEventListener("click", () => {
+      const id = (idInput.value || "").trim();
+      if (!id) return alert("Add meg az ID-t.");
+      if (!confirm(`Törlöd: ${id} ? (csak a USER verziót)`)) return;
+      App.deleteUserItem(id);
+      renderList();
+      fillPrefixSelects();
+      alert("Törölve (ha volt USER verzió).");
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => {
+      copyText(JSON.stringify(App.loadUserQA(), null, 2));
+    });
+
+    document.getElementById("btnImport").addEventListener("click", () => {
+      const txt = prompt("Illeszd be a USER JSON tömböt (export):");
+      if (!txt) return;
+      try{
+        const data = JSON.parse(txt);
+        if (!Array.isArray(data)) throw new Error("Tömb kell.");
+        App.saveUserQA(data);
+        renderList();
+        fillPrefixSelects();
+        alert("Import kész.");
+      } catch(e){
+        alert("Hibás JSON: " + (e.message || String(e)));
+      }
+    });
+
+    document.getElementById("btnBulkPreview").addEventListener("click", () => {
+      const prefix = bulkDefaultPrefix.value;
+      const pad = parseInt(bulkPad.value, 10) || 0;
+      const txt = bulkInput.value || "";
+      bulkItems = App.bulkParseQA(txt, prefix, pad);
+
+      bulkInfo.textContent = `Preview: ${bulkItems.length} elem`;
+      bulkPreviewDiv.innerHTML = "";
+
+      for (const it of bulkItems.slice(0, 50)){
+        const row = document.createElement("div");
+        row.className = "itemRow";
+
+        const t = document.createElement("div");
+        t.className = "itemTitle";
+        t.textContent = `${it.id} – ${it.q}`;
+
+        const m = document.createElement("div");
+        m.className = "small";
+        m.textContent = (it.a || "").slice(0, 140) + ((it.a || "").length > 140 ? "..." : "");
+
+        row.appendChild(t);
+        row.appendChild(m);
+        bulkPreviewDiv.appendChild(row);
+      }
+
+      if (bulkItems.length > 50){
+        const note = document.createElement("div");
+        note.className = "muted";
+        note.textContent = `… csak az első 50 elem látszik a preview-ban.`;
+        bulkPreviewDiv.appendChild(note);
+      }
+    });
+
+    document.getElementById("btnBulkImport").addEventListener("click", () => {
+      if (!bulkItems.length) return alert("Előbb Preview.");
+      if (!confirm(`Importálod a preview ${bulkItems.length} elemet USER-be? (ID ütközés felülír)`)) return;
+
+      for (const it of bulkItems){
+        if (!it.tags || !it.tags.length){
+          const p = App.parseId(it.id);
+          if (p) it.tags = [p.prefix.replace("/","")];
+        }
+        App.upsertUserItem({ ...it, keywords: it.keywords || [] });
+      }
+
+      renderList();
+      fillPrefixSelects();
+      alert("Bulk import kész.");
+    });
+
+    filterInput.addEventListener("input", renderList);
+
+    renderKwChips([]);
+    fillPrefixSelects();
+    renderList();
+  </script>
+</body>
+</html>
