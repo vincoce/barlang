@@ -3,6 +3,110 @@ window.App = (() => {
   const PROGRESS_KEY = "qaProgress_v1";
   const MASTERY_PCT = 90;
 
+const SRS = {
+  // Box intervals (ms). Tune if you want.
+  // 0 = new/unseen (due now)
+  intervals: [
+    0,                 // box0: immediate
+    6 * 60 * 60 * 1000,  // box1: 6h
+    1 * 24 * 60 * 60 * 1000, // box2: 1d
+    3 * 24 * 60 * 60 * 1000, // box3: 3d
+    7 * 24 * 60 * 60 * 1000, // box4: 7d
+    14 * 24 * 60 * 60 * 1000 // box5: 14d
+  ],
+  maxBox: 5,
+};
+
+function srsEnsure(progress, id){
+  const rec = progress[id] || (progress[id] = {});
+  if (typeof rec.box !== "number") rec.box = 0;
+  if (typeof rec.due !== "number") rec.due = 0; // due timestamp ms
+  if (typeof rec.seen !== "number") rec.seen = 0;
+  if (typeof rec.correctStreak !== "number") rec.correctStreak = 0;
+  return rec;
+};
+
+function srsIsDue(progress, id, nowMs){
+  const rec = progress[id];
+  if (!rec) return true; // unseen = due
+  const due = typeof rec.due === "number" ? rec.due : 0;
+  return due <= (nowMs ?? Date.now());
+};
+
+function srsCounts(items, progress, nowMs){
+  const now = nowMs ?? Date.now();
+  let due = 0, newCount = 0;
+  for (const it of items){
+    const rec = progress[it.id];
+    if (!rec) { newCount++; due++; continue; }
+    if ((rec.due ?? 0) <= now) due++;
+  }
+  return { due, newCount, total: items.length };
+};
+
+// Call this after you compute a score result
+function srsApplyResult(progress, id, isSuccess){
+  const now = Date.now();
+  const rec = srsEnsure(progress, id);
+
+  rec.seen = (rec.seen || 0) + 1;
+
+  if (isSuccess){
+    rec.correctStreak = (rec.correctStreak || 0) + 1;
+    rec.box = Math.min(SRS.maxBox, (rec.box ?? 0) + 1);
+  } else {
+    rec.correctStreak = 0;
+    // Leitner style: drop back (tune: either -1 or to 0)
+    rec.box = Math.max(0, (rec.box ?? 0) - 1);
+  }
+
+  const interval = SRS.intervals[rec.box] ?? 0;
+  rec.due = now + interval;
+
+  return rec;
+};
+
+// Pick next item: due first; among due, prefer lower boxes and recently failed.
+function pickNextSrs(items, progress){
+  const now = Date.now();
+  if (!items.length) return null;
+
+  const due = [];
+  const notDue = [];
+
+  for (const it of items){
+    if (srsIsDue(progress, it.id, now)) due.push(it);
+    else notDue.push(it);
+  }
+
+  const pool = due.length ? due : items; // if nothing due, allow anything
+
+  // Weighting: lower box => higher weight; more misses => higher weight
+  const weighted = pool.map(it => {
+    const rec = progress[it.id] || {};
+    const box = typeof rec.box === "number" ? rec.box : 0;
+    const lastPct = rec.lastPct ?? 0;
+    const lastMissing = (rec.lastMissing || []).length;
+
+    // weight formula (simple + effective)
+    let w = 1;
+    w += (SRS.maxBox - box) * 2;
+    if (lastPct < (MASTERY_PCT ?? 80)) w += 2;
+    w += Math.min(5, lastMissing);
+
+    return { it, w };
+  });
+
+  const totalW = weighted.reduce((s,x)=>s+x.w,0);
+  let r = Math.random() * totalW;
+  for (const x of weighted){
+    r -= x.w;
+    if (r <= 0) return x.it;
+  }
+  return weighted[weighted.length - 1].it;
+};
+
+
   function loadUserQA(){
     try { return JSON.parse(localStorage.getItem(USER_KEY) || "[]"); }
     catch { return []; }
@@ -169,58 +273,88 @@ window.App = (() => {
     return `${prefix}${numStr}`;
   }
 
-  // ---- Bulk parse (supports standalone II: lines) ----
-  function bulkParseQA(text, defaultPrefix="III/", padWidth=0){
-    const raw = (text || "").replace(/\r/g, "");
-    const lines = raw.split("\n");
+  function bulkParseQA(text, defaultPrefix, pad){
+  const raw = String(text || "").replace(/\r/g, "");
+  const lines = raw.split("\n");
 
-    const sectionOnlyRe = /^\s*(VIII|VII|VI|IV|V|III|II|I)\s*[:.]?\s*$/i;
-    const headingRe = /^\s*(?:(VIII|VII|VI|IV|V|III|II|I)\b\s*[:.\-]?\s*)?(\d{1,3})\s*[.)-]\s*(.+?)\s*$/i;
+  // Section header: "I." or "II:" or "III :" etc.
+  const sectionHeaderRe = /^\s*([IVXLCDM]{1,10})\s*([.:])\s*$/i;
 
-    const items = [];
-    let cur = null;
-    let activePrefix = defaultPrefix;
+  // Question start: "4. Kérdés" or "4.Kérdés" or "4) Kérdés"
+  const qStartRe = /^\s*(\d{1,4})\s*[.)]\s*(.+?)\s*$/;
 
-    function pad(n){
-      const s = String(n);
-      return padWidth > 0 ? s.padStart(padWidth, "0") : s;
-    }
+  const items = [];
+  let currentPrefix = (defaultPrefix || "III/").toUpperCase();
+  let current = null;
 
-    function pushCur(){
-      if (!cur) return;
-      cur.a = (cur.aLines.join("\n").trim());
-      delete cur.aLines;
-      items.push(cur);
-    }
-
-    for (const line of lines){
-      const sec = line.match(sectionOnlyRe);
-      if (sec){
-        activePrefix = `${sec[1].toUpperCase()}/`;
-        continue;
-      }
-
-      const m = line.match(headingRe);
-      if (m){
-        pushCur();
-
-        const roman = m[1] ? m[1].toUpperCase() : null;
-        const qNum = parseInt(m[2], 10);
-        const qText = m[3].trim();
-
-        const prefix = roman ? `${roman}/` : activePrefix;
-        const id = `${prefix}${pad(qNum)}`;
-
-        cur = { id, q: qText, aLines: [], tags: [prefix.replace("/","")] };
-        continue;
-      }
-
-      if (cur) cur.aLines.push(line);
-    }
-
-    pushCur();
-    return items.filter(x => x.q && x.q.trim().length);
+  function padNum(n){
+    const p = parseInt(pad, 10) || 0;
+    if (p <= 0) return String(n);
+    return String(n).padStart(p, "0");
   }
+
+  function flush(){
+    if (!current) return;
+
+    current.q = (current.q || "").trim();
+    current.a = (current.aLines || []).join("\n").trim();
+    delete current.aLines;
+
+    if (current.q){
+      // Ensure section tag exists
+      const sec = currentPrefix.replace("/", "");
+      current.tags = Array.isArray(current.tags) ? current.tags : [];
+      if (!current.tags.includes(sec)) current.tags.unshift(sec);
+
+      if (!current.keywords) current.keywords = [];
+
+      items.push(current);
+    }
+    current = null;
+  }
+
+  for (let i = 0; i < lines.length; i++){
+    const line = lines[i];
+
+    // SECTION change (I. / II: / III:)
+    const secM = line.match(sectionHeaderRe);
+    if (secM){
+      flush();
+      const roman = secM[1].toUpperCase();
+      currentPrefix = roman + "/";
+      continue;
+    }
+
+    // QUESTION start
+    const qm = line.match(qStartRe);
+    if (qm){
+      flush();
+
+      const qNr = parseInt(qm[1], 10);
+      const qText = qm[2].trim();
+
+      current = {
+        // IMPORTANT: ID from source number, not nextId()
+        id: `${currentPrefix}${padNum(qNr)}`,
+        tags: [currentPrefix.replace("/", "")],
+        q: qText,
+        aLines: [],
+        keywords: []
+      };
+      continue;
+    }
+
+    // ANSWER lines (multi-line, until next question/section)
+    if (current){
+      // ignore leading empty lines, keep the rest as-is
+      if (current.aLines.length === 0 && !line.trim()) continue;
+      current.aLines.push(line.replace(/\s+$/,""));
+    }
+  }
+
+  flush();
+  return items;
+};
 
   function suggestKeywords(answer, max=10){
   const stop = new Set([
@@ -312,7 +446,99 @@ window.App = (() => {
   return out;
 }
 
-  return {
+
+function toKeywordSet(item){
+  const set = new Set();
+  const kws = item.keywords || [];
+  for (const kw of kws){
+    const base = Array.isArray(kw) ? kw[0] : kw;
+    const k = normalizeText(base, true);
+    if (k) set.add(k);
+  }
+  return set;
+}
+
+function jaccard(aSet, bSet){
+  if (!aSet.size && !bSet.size) return 0;
+  let inter = 0;
+  for (const x of aSet) if (bSet.has(x)) inter++;
+  const union = aSet.size + bSet.size - inter;
+  return union ? inter / union : 0;
+}
+
+function char3grams(s){
+  const x = normalizeText(s, true).replace(/\s+/g," ");
+  const grams = new Set();
+  if (x.length < 3) return grams;
+  for (let i=0;i<x.length-2;i++){
+    grams.add(x.slice(i,i+3));
+  }
+  return grams;
+}
+
+function combinedSimilarity(aItem, bItem){
+  // 1) keyword overlap (strong)
+  const aK = toKeywordSet(aItem);
+  const bK = toKeywordSet(bItem);
+  const kwSim = jaccard(aK, bK);
+
+  // 2) answer text similarity (fallback/extra)
+  const aG = char3grams(aItem.a || "");
+  const bG = char3grams(bItem.a || "");
+  const txtSim = jaccard(aG, bG);
+
+  // Weighted combo: keywords dominate if present
+  const hasKw = aK.size > 0 && bK.size > 0;
+  return hasKw ? (0.75 * kwSim + 0.25 * txtSim) : txtSim;
+}
+
+/**
+ * Pick distractors for item:
+ * difficulty:
+ *  - "easy": random from section
+ *  - "hard": highest similarity (most confusable)
+ *  - "mixed": half hard + half random
+ */
+function pickDistractors(item, candidates, count, difficulty="hard"){
+  const pool = candidates.filter(x => x.id !== item.id);
+
+  if (difficulty === "easy"){
+    return shuffle(pool).slice(0, count);
+  }
+
+  if (difficulty === "hard"){
+    const scored = pool
+      .map(x => ({ x, s: combinedSimilarity(item, x) }))
+      .sort((a,b)=> b.s - a.s);
+
+    // take top N*3, then shuffle a bit to avoid always same
+    const top = scored.slice(0, Math.max(count * 3, count)).map(z=>z.x);
+    return shuffle(top).slice(0, count);
+  }
+
+  // mixed
+  const hardN = Math.ceil(count / 2);
+  const easyN = count - hardN;
+  const hard = pickDistractors(item, pool, hardN, "hard");
+  const hardIds = new Set(hard.map(x=>x.id));
+  const rest = pool.filter(x=>!hardIds.has(x.id));
+  const easy = shuffle(rest).slice(0, easyN);
+  return shuffle(hard.concat(easy)).slice(0, count);
+}
+
+function autoKeywordsFromAnswer(answer, max=10){
+  // Uses your existing suggestKeywords() (accent-preserving)
+  const sugg = suggestKeywords(answer, max);
+
+  // Convert into keywords format:
+  // keywords can be string OR array of synonyms; we store strings by default.
+  // (You can later edit to add synonyms with | in admin.)
+  return (sugg || []).map(s => String(s).trim()).filter(Boolean);
+}
+
+    return {
+		autoKeywordsFromAnswer,
+		pickDistractors,
     USER_KEY, PROGRESS_KEY,
     MASTERY_PCT,
 
@@ -325,5 +551,13 @@ window.App = (() => {
     scoreAnswer, updateProgress, computeWeight, weightedPick,
 
     parseId, nextId, bulkParseQA, suggestKeywords,
+
+    // ===== SRS exports (ADD) =====
+    SRS,                 // optional but handy
+    srsEnsure,           // optional
+    srsIsDue,
+    srsCounts,
+    srsApplyResult,
+    pickNextSrs,
   };
 })();

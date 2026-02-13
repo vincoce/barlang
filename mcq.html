@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCQ gyakorló</title>
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .mcqQ { white-space: pre-wrap; font-size: 18px; margin-top: 6px; }
+    .choices { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+    .choiceBtn{
+      text-align:left;
+      border-radius:14px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 80%, var(--card));
+      cursor:pointer;
+      font-weight:700;
+    }
+    .choiceBtn:hover{ filter:brightness(1.04); }
+    .choiceBtn.ok{
+      border-color: color-mix(in srgb, var(--ok) 55%, var(--line));
+      background: color-mix(in srgb, var(--ok) 12%, var(--surface));
+      color: var(--ok);
+    }
+    .choiceBtn.bad{
+      border-color: color-mix(in srgb, var(--bad) 55%, var(--line));
+      background: color-mix(in srgb, var(--bad) 12%, var(--surface));
+      color: var(--bad);
+    }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .hintBox{
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      background: var(--surface);
+      white-space:pre-wrap;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <h1>MCQ gyakorló</h1>
+          <div class="muted">
+            Két mód: <b>A</b> (helyes válasz kiválasztása) és <b>B</b> (hiányzó kulcsszó kiválasztása).
+            Nincs gépelés.
+          </div>
+        </div>
+        <span class="pill" id="counter">Kérdés 0 / 0</span>
+      </div>
+
+      <div class="row" style="justify-content: space-between; margin-top:10px;">
+        <div class="row">
+          <span class="badge" id="qStatus">—</span>
+          <span class="pill" id="globalStats">—</span>
+        </div>
+
+        <div class="row">
+          <label class="pill">
+            Mód:&nbsp;
+            <select id="mcqMode">
+              <option value="A" selected>A — Válasz MCQ</option>
+              <option value="B">B — Hiányzó kulcsszó</option>
+            </select>
+          </label>
+
+          <label class="pill">
+            Kérdéskör:&nbsp;
+            <select id="poolSelect">
+              <option value="all" selected>Összes</option>
+              <option value="review">Csak ami hibás volt</option>
+            </select>
+          </label>
+
+          <label class="pill">
+            Szekció:&nbsp;
+            <select id="sectionSelect">
+              <option value="" selected>Összes</option>
+            </select>
+          </label>
+<label class="pill">
+  Nehézség:&nbsp;
+  <select id="difficultySelect">
+    <option value="easy">Easy (random)</option>
+    <option value="mixed" selected>Mixed</option>
+    <option value="hard">Hard (similar)</option>
+  </select>
+</label>
+          <label class="pill">
+            Opciók:&nbsp;
+            <select id="choiceCount">
+              <option value="3">3</option>
+              <option value="4" selected>4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+<label class="pill">
+  Timer:&nbsp;
+  <select id="timerSelect">
+    <option value="0">Off</option>
+    <option value="2000">2s</option>
+    <option value="3000">3s</option>
+    <option value="5000">5s</option>
+    <option value="8000">8s</option>
+    <option value="10000" selected>10s</option>
+    <option value="15000">15s</option>
+  </select>
+</label>
+          <button class="btn btn--md" id="btnNext">Következő</button>
+        </div>
+      </div>
+
+     <div id="questionBlock">
+  <!-- Think-time UI -->
+<div id="thinkRow" class="row" style="justify-content: space-between; align-items:center; margin-top:10px; display:none;">
+  <div style="flex:1; padding-right:10px;">
+    <div class="muted" id="thinkLabel" style="margin-bottom:6px;">Gondolkodj…</div>
+    <div class="thinkBar">
+      <div class="thinkBar__fill" id="thinkFill"></div>
+    </div>
+  </div>
+
+  <button class="btn btn--md" id="btnRevealNow">Reveal now</button>
+</div>
+
+<!-- Optional: show ID only after reveal -->
+<div id="questionMeta" class="muted" style="display:none; margin-top:10px;"></div>
+  <div class="mcqQ" id="questionText">—</div>
+  <div class="choices" id="choices"></div>
+</div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn--sm btn--ghost" id="btnShow">Mutasd a teljes választ</button>
+        <button class="btn btn--sm btn--ghost" id="btnExplain">Miért ez a jó?</button>
+        <button class="btn btn--sm btn--ghost" id="btnResetProgress">Progress törlése</button>
+      </div>
+
+      <div class="hintBox" id="answerBox"></div>
+      <div class="hintBox" id="explainBox"></div>
+    </div>
+  </div>
+
+  <script src="./qa.js"></script>
+  <script src="./utils.js"></script>
+  <script src="./layout.js"></script>
+  <script>
+  const QA = App.getQA().slice();
+  const progress = App.loadProgress();
+
+  let currentItem = null;
+  let currentCorrectIndex = -1;
+  let currentChoices = [];
+  let locked = false;
+
+  // ---- Think-time config ----
+  const TIMER_KEY = "mcqThinkDelayMs_v1";
+
+function loadThinkDelay(){
+  const v = parseInt(localStorage.getItem(TIMER_KEY) || "10000", 10);
+  return Number.isFinite(v) ? v : 10000;
+}
+function saveThinkDelay(ms){
+  localStorage.setItem(TIMER_KEY, String(ms));
+}
+
+let THINK_DELAY_MS = loadThinkDelay();
+  let revealPhase = false;
+
+  let thinkTimer = null;
+  let thinkTick = null;
+  let thinkStart = 0;
+  let thinkEnd = 0;
+
+  function clearThinkTimers(){
+    if (thinkTimer) { clearTimeout(thinkTimer); thinkTimer = null; }
+    if (thinkTick)  { clearInterval(thinkTick); thinkTick = null; }
+  }
+
+  function setThinkUI(visible){
+    const row = document.getElementById("thinkRow");
+    row.style.display = visible ? "flex" : "none";
+    if (!visible){
+      document.getElementById("thinkFill").style.width = "0%";
+      document.getElementById("thinkLabel").textContent = "Gondolkodj…";
+    }
+  }
+
+  function updateThinkProgress(){
+    const now = Date.now();
+    const total = Math.max(1, thinkEnd - thinkStart);
+    const left = Math.max(0, thinkEnd - now);
+    const elapsed = total - left;
+
+    const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+    document.getElementById("thinkFill").style.width = pct.toFixed(2) + "%";
+    document.getElementById("thinkLabel").textContent = `Gondolkodj… ${Math.ceil(left/1000)}s`;
+  }
+
+  function revealNow(){
+    if (!currentItem) return;
+    if (revealPhase) return;
+
+    clearThinkTimers();
+    setThinkUI(false);
+
+    revealPhase = true;
+
+    // show meta (ID)
+    const meta = document.getElementById("questionMeta");
+    meta.textContent = currentItem.id || "";
+    meta.style.display = meta.textContent ? "block" : "none";
+
+    // show stats
+    document.getElementById("qStatus").style.visibility = "visible";
+    document.getElementById("globalStats").style.visibility = "visible";
+
+    // render choices (if not answered yet)
+    if (!locked) renderChoices();
+  }
+function initTimerSelect(){
+  const sel = document.getElementById("timerSelect");
+  if (!sel) return;
+
+  // set UI to stored value (if option exists)
+  sel.value = String(THINK_DELAY_MS);
+
+  // if stored value not in list, fall back to 10s
+  if (sel.value !== String(THINK_DELAY_MS)){
+    THINK_DELAY_MS = 10000;
+    sel.value = "10000";
+    saveThinkDelay(THINK_DELAY_MS);
+  }
+
+  sel.addEventListener("change", () => {
+    THINK_DELAY_MS = parseInt(sel.value, 10) || 0;
+    saveThinkDelay(THINK_DELAY_MS);
+
+    // apply immediately: restart current question with new timer
+    loadQuestion();
+  });
+}
+  function inferSectionFromId(id){
+    const m = String(id||"").match(/^([A-Za-z0-9]+)\//);
+    return m ? m[1] : null;
+  }
+
+  function getAllSections(){
+    const set = new Set();
+    for (const q of QA){
+      for (const t of (q.tags || [])){
+        if (typeof t === "string" && t.length <= 10) set.add(t);
+      }
+      const sid = inferSectionFromId(q.id);
+      if (sid) set.add(sid);
+    }
+    const rank = (s) => {
+      const map = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7, VIII:8, IX:9, X:10 };
+      return map[s] ?? 999;
+    };
+    return Array.from(set).sort((a,b)=>{
+      const ra = rank(a), rb = rank(b);
+      if (ra !== rb) return ra - rb;
+      return a.localeCompare(b, "hu");
+    });
+  }
+
+  function fillSectionSelect(){
+    const sel = document.getElementById("sectionSelect");
+    const cur = sel.value || "";
+    sel.innerHTML = `<option value="">Összes</option>`;
+    const secs = getAllSections();
+    for (const s of secs){
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s;
+      sel.appendChild(opt);
+    }
+    sel.value = secs.includes(cur) ? cur : "";
+  }
+
+  function poolItems(){
+    const pool = document.getElementById("poolSelect").value;
+    const section = document.getElementById("sectionSelect").value;
+
+    let items = QA.slice();
+
+    if (section){
+      items = items.filter(q => {
+        const byTag = (q.tags || []).includes(section);
+        const byId = inferSectionFromId(q.id) === section;
+        return byTag || byId;
+      });
+    }
+
+    if (pool === "review"){
+      items = items.filter(q => {
+        const rec = progress[q.id];
+        if (!rec) return true;
+        const miss = (rec.lastMissing || []).length;
+        const last = rec.lastPct ?? 0;
+        return miss > 0 || last < App.MASTERY_PCT;
+      });
+    }
+
+    return items;
+  }
+
+  function pickNext(){
+    const items = poolItems();
+    if (!items.length) return null;
+    return App.pickNextSrs(items, progress);
+  }
+
+  function updateGlobalStats(){
+    const items = poolItems();
+    const c = App.srsCounts(items, progress);
+    let mastered = 0;
+    for (const q of items){
+      if (progress[q.id]?.mastered) mastered++;
+    }
+    document.getElementById("globalStats").textContent =
+      `Due: ${c.due}/${c.total} · New: ${c.newCount} · Mastered: ${mastered}/${c.total}`;
+  }
+
+  function updateQuestionStatus(){
+    const badge = document.getElementById("qStatus");
+    if (!currentItem) { badge.textContent = "—"; badge.className = "badge"; return; }
+
+    const rec = progress[currentItem.id];
+    if (!rec){
+      badge.textContent = "Új kérdés";
+      badge.className = "badge";
+      return;
+    }
+    if (rec.mastered){
+      badge.textContent = `Mastered (best ${rec.bestPct}%)`;
+      badge.className = "badge ok";
+    } else {
+      badge.textContent = `Needs work (best ${rec.bestPct}%, last ${rec.lastPct ?? "—"}%)`;
+      badge.className = "badge bad";
+    }
+  }
+
+  function normalizeForDedup(s){
+    return App.normalizeText(s, true);
+  }
+
+  function answerSummary(a){
+    const txt = String(a||"").trim();
+    if (!txt) return "—";
+    const firstLine = txt.split(/\r?\n/).find(x => x.trim()) || txt;
+    const firstSentence = firstLine.split(/(?<=[.!?])\s+/)[0] || firstLine;
+    const out = firstSentence.trim();
+    return out.length > 220 ? out.slice(0, 220) + "…" : out;
+  }
+
+  function getCandidatesSameSection(base){
+    const sec = inferSectionFromId(base.id) || (base.tags||[])[0] || "";
+    const items = QA.filter(q => q.id !== base.id);
+    if (!sec) return items;
+    return items.filter(q => (q.tags||[]).includes(sec) || inferSectionFromId(q.id) === sec);
+  }
+
+  // --- Mode A: choose correct answer among N ---
+  function buildChoicesA(item, n){
+    const correctText = answerSummary(item.a);
+
+    const difficulty = document.getElementById("difficultySelect").value;
+    const candidates = getCandidatesSameSection(item);
+    const distractors = App.pickDistractors(item, candidates, n-1, difficulty);
+
+    const out = [{ text: answerSummary(item.a), isCorrect:true, ref:item }];
+    for (const d of distractors){
+      out.push({ text: answerSummary(d.a), isCorrect:false, ref:d });
+    }
+
+    const shuffled = App.shuffle(out);
+    const correctIndex = shuffled.findIndex(x => x.isCorrect);
+    return { choices: shuffled, correctIndex };
+  }
+
+  // --- Mode B: choose missing keyword ---
+  function flatKeywords(q){
+    const kws = q.keywords || [];
+    const out = [];
+    for (const kw of kws){
+      if (Array.isArray(kw)) {
+        for (const s of kw) out.push(String(s));
+      } else out.push(String(kw));
+    }
+    return out.map(x => x.trim()).filter(Boolean);
+  }
+
+  function cleanKwPool(arr){
+    return (arr || [])
+      .map(x => String(x).trim())
+      .filter(Boolean)
+      .filter(x => x.length >= 3)
+      .filter(x => x.length <= 60);
+  }
+
+  function buildChoicesB(item, n){
+    let kws = item.keywords || [];
+    if (!kws.length){
+      const auto = App.autoKeywordsFromAnswer(item.a || "", 12);
+      kws = auto.map(s => s);
+    }
+    if (!kws.length){
+      return { choices: [{ text:"Ehhez nincs válasz / kulcsszó.", isCorrect:true }], correctIndex: 0, noKeywords: true };
+    }
+
+    const group = kws[Math.floor(Math.random() * kws.length)];
+    const correctDisplay = Array.isArray(group) ? String(group[0]) : String(group);
+
+    const out = [{ text: correctDisplay, isCorrect: true }];
+    const seen = new Set([App.normalizeText(correctDisplay, true)]);
+
+    const sameSecQs = getCandidatesSameSection(item);
+    const allOtherQs = QA.filter(q => q.id !== item.id);
+
+    let pool = [];
+    for (const q of sameSecQs) pool.push(...flatKeywords(q));
+    if (pool.length < 30){
+      for (const q of allOtherQs) pool.push(...flatKeywords(q));
+    }
+    if (pool.length < 30){
+      for (const q of sameSecQs) pool.push(...App.autoKeywordsFromAnswer(q.a || "", 8));
+    }
+    if (pool.length < 30){
+      for (const q of allOtherQs){
+        pool.push(...App.autoKeywordsFromAnswer(q.a || "", 6));
+        if (pool.length > 200) break;
+      }
+    }
+
+    pool = App.shuffle(cleanKwPool(pool));
+
+    for (const k of pool){
+      if (out.length >= n) break;
+      const nk = App.normalizeText(k, true);
+      if (!nk || seen.has(nk)) continue;
+      if (nk === App.normalizeText(correctDisplay, true)) continue;
+      out.push({ text: k, isCorrect: false });
+      seen.add(nk);
+    }
+
+    const shuffled = App.shuffle(out);
+    const correctIndex = shuffled.findIndex(x => x.isCorrect);
+    return { choices: shuffled, correctIndex, noKeywords: false };
+  }
+
+  function renderChoices(){
+    const box = document.getElementById("choices");
+    box.innerHTML = "";
+
+    for (let i=0;i<currentChoices.length;i++){
+      const c = currentChoices[i];
+      const btn = document.createElement("button");
+      btn.className = "choiceBtn";
+      btn.innerHTML = `<div class="mono">${String.fromCharCode(65+i)})</div><div style="margin-top:6px; font-weight:700;">${escapeHtml(c.text)}</div>`;
+      btn.addEventListener("click", () => onChoose(i, btn));
+      box.appendChild(btn);
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function applyProgress(isCorrect){
+    const score = {
+      pct: isCorrect ? 100 : 0,
+      got: isCorrect ? 1 : 0,
+      total: 1,
+      found: isCorrect ? ["mcq"] : [],
+      missing: isCorrect ? [] : ["mcq"]
+    };
+    App.updateProgress(progress, currentItem.id, score);
+    App.srsApplyResult(progress, currentItem.id, isCorrect);
+    updateQuestionStatus();
+    updateGlobalStats();
+  }
+
+  function onChoose(index, btn){
+    if (locked) return;
+
+    // If user somehow clicks before reveal, force reveal first.
+    if (!revealPhase) revealNow();
+
+    locked = true;
+
+    const isCorrect = index === currentCorrectIndex;
+
+    const buttons = Array.from(document.querySelectorAll(".choiceBtn"));
+    buttons.forEach((b, i) => {
+      if (i === currentCorrectIndex) b.classList.add("ok");
+      else if (i === index && i !== currentCorrectIndex) b.classList.add("bad");
+    });
+
+    applyProgress(isCorrect);
+  }
+
+  function loadQuestion(){
+    clearThinkTimers();
+    setThinkUI(false);
+
+    revealPhase = false;
+    locked = false;
+
+    // hide all “hints” about the question
+    document.getElementById("qStatus").style.visibility = "hidden";
+    document.getElementById("globalStats").style.visibility = "hidden";
+    document.getElementById("questionMeta").style.display = "none";
+    document.getElementById("choices").innerHTML = "";
+
+    const answerBox = document.getElementById("answerBox");
+    const explainBox = document.getElementById("explainBox");
+    answerBox.style.display = "none"; answerBox.textContent = "";
+    explainBox.style.display = "none"; explainBox.textContent = "";
+
+    currentItem = pickNext();
+
+    if (!currentItem){
+      document.getElementById("questionText").textContent = "Nincs kérdés ebben a kérdéskörben.";
+      document.getElementById("counter").textContent = "Kérdés 0 / 0";
+      return;
+    }
+
+    const items = poolItems();
+    const idx = items.findIndex(x => x.id === currentItem.id);
+    document.getElementById("counter").textContent = `Kérdés ${Math.max(1, idx+1)} / ${items.length}`;
+
+    // IMPORTANT: show only question text (no ID)
+    document.getElementById("questionText").textContent = currentItem.q;
+
+    // Build choices now, but render later
+    const n = parseInt(document.getElementById("choiceCount").value, 10) || 4;
+    const mode = document.getElementById("mcqMode").value;
+
+    let built;
+    if (mode === "B") built = buildChoicesB(currentItem, n);
+    else built = buildChoicesA(currentItem, n);
+
+    currentChoices = built.choices;
+    currentCorrectIndex = built.correctIndex;
+
+    // Keep progress updated in background, but keep UI hidden
+    updateQuestionStatus();
+    updateGlobalStats();
+
+    if (THINK_DELAY_MS > 0){
+      setThinkUI(true);
+      thinkStart = Date.now();
+      thinkEnd = thinkStart + THINK_DELAY_MS;
+
+      updateThinkProgress();
+      thinkTick = setInterval(updateThinkProgress, 100);
+
+      thinkTimer = setTimeout(() => {
+        if (!currentItem || locked) return;
+        revealNow();
+      }, THINK_DELAY_MS);
+    } else {
+      revealNow();
+    }
+  }
+
+  function showFullAnswer(){
+    if (!currentItem) return;
+
+    // block before reveal (forces thinking)
+    if (!revealPhase) return;
+
+    const box = document.getElementById("answerBox");
+    const vis = box.style.display === "block";
+    if (vis){ box.style.display = "none"; return; }
+    box.textContent = currentItem.a || "—";
+    box.style.display = "block";
+  }
+
+  function explain(){
+    if (!currentItem) return;
+
+    // block before reveal (optional)
+    if (!revealPhase) return;
+
+    const box = document.getElementById("explainBox");
+    const vis = box.style.display === "block";
+    if (vis){ box.style.display = "none"; return; }
+
+    const mode = document.getElementById("mcqMode").value;
+    if (mode === "B"){
+      box.textContent =
+        "B mód: a jó opció egy kulcsszó a helyes válaszból.\n" +
+        "A rosszak más kérdések kulcsszavai (azonos szekcióból, ha lehet).\n\n" +
+        "Ha túl könnyű / hülye opciók jönnek: adminban finomíts kulcsszavakat.";
+    } else {
+      box.textContent =
+        "A mód: a jó opció a kérdés válaszának rövidített (első mondat / első sor) kivonata.\n" +
+        "A rosszak más kérdések válasz-kivonatai (azonos szekcióból, ha lehet).\n\n" +
+        "Pontosság: ez felismeréses (recognition) mód, nem teljes felidézés.";
+    }
+    box.style.display = "block";
+  }
+
+  function resetProgress(){
+    if (!confirm("Biztosan törlöd az összes progress adatot ezen az eszközön?")) return;
+    localStorage.removeItem(App.PROGRESS_KEY);
+    location.reload();
+  }
+
+  // ---- Events ----
+  document.getElementById("btnNext").addEventListener("click", () => {
+    clearThinkTimers();
+    loadQuestion();
+  });
+
+  document.getElementById("btnRevealNow").addEventListener("click", () => {
+    revealNow();
+  });
+
+  document.getElementById("btnShow").addEventListener("click", showFullAnswer);
+  document.getElementById("btnExplain").addEventListener("click", explain);
+  document.getElementById("btnResetProgress").addEventListener("click", resetProgress);
+
+  document.getElementById("poolSelect").addEventListener("change", loadQuestion);
+  document.getElementById("sectionSelect").addEventListener("change", loadQuestion);
+  document.getElementById("mcqMode").addEventListener("change", loadQuestion);
+  document.getElementById("choiceCount").addEventListener("change", loadQuestion);
+  document.getElementById("difficultySelect").addEventListener("change", loadQuestion);
+
+  fillSectionSelect();
+  initTimerSelect();
+  loadQuestion();
+</script>
+</body>
+</html>

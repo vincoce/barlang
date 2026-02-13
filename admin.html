@@ -73,6 +73,7 @@
             <div class="row">
               <button class="btn btn--sm btn--ghost" id="btnSuggestKw">Javaslatok</button>
               <button class="btn btn--sm btn--ghost" id="btnClearKw">Ürítés</button>
+			  <button id="btnAutoFillKw" class="ghost">Auto kitöltés</button>
             </div>
           </div>
 
@@ -93,6 +94,7 @@ aláírás|jogosult"></textarea>
           <div class="row" style="margin-top:10px;">
             <button class="btn btn--sm btn--ghost" id="btnExport">Export (USER JSON)</button>
             <button class="btn btn--sm btn--ghost" id="btnImport">Import (USER JSON)</button>
+			<button id="btnAutoKwAll" class="ghost">Auto kulcsszó (hiányzók)</button>
           </div>
 
           <hr class="sep">
@@ -364,8 +366,9 @@ Válasz"></textarea>
       if (!id) return alert("Add meg az ID-t.");
       if (!confirm(`Törlöd: ${id} ? (csak a USER verziót)`)) return;
       App.deleteUserItem(id);
+	  fillPrefixSelects();
       renderList();
-      fillPrefixSelects();
+      
       alert("Törölve (ha volt USER verzió).");
     });
 
@@ -431,13 +434,44 @@ Válasz"></textarea>
           const p = App.parseId(it.id);
           if (p) it.tags = [p.prefix.replace("/","")];
         }
-        App.upsertUserItem({ ...it, keywords: it.keywords || [] });
+        const a = (it.a || "").trim();
+const kw = (it.keywords && it.keywords.length) ? it.keywords : (a ? App.autoKeywordsFromAnswer(a, 12) : []);
+App.upsertUserItem({ ...it, keywords: kw });
       }
 
       renderList();
       fillPrefixSelects();
       alert("Bulk import kész.");
     });
+
+document.getElementById("btnAutoFillKw").addEventListener("click", () => {
+  const a = (aInput.value || "").trim();
+  if (!a) return alert("Előbb írj választ.");
+  const kws = App.autoKeywordsFromAnswer(a, 12);
+  kwInput.value = kws.join("\n");   // one per line
+  renderKwChips([]);                // clear chips
+});
+
+document.getElementById("btnAutoKwAll").addEventListener("click", () => {
+  const user = App.loadUserQA();
+  if (!user.length) return alert("Nincs USER elem.");
+
+  let changed = 0;
+  for (const it of user){
+    const has = Array.isArray(it.keywords) && it.keywords.length > 0;
+    if (has) continue;
+
+    const a = (it.a || "").trim();
+    if (!a) continue;
+
+    it.keywords = App.autoKeywordsFromAnswer(a, 12);
+    changed++;
+  }
+
+  App.saveUserQA(user);
+  renderList();
+  alert(`Kész. Frissített: ${changed} db.`);
+});
 
     filterInput.addEventListener("input", renderList);
 

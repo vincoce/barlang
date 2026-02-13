@@ -1,0 +1,341 @@
+I.
+1.Mi a barlang?
+Földkérget alkotó kőzetben kialakult természetes üreg, mely hossztengelye nagyobb, mint 2m és mérete ember számára lehetővé teszi a behatolást
+A Föld szilárd kérgében természetes úton kialakult ember számára járható üreg. Hossztengelye legalább 2 méter hosszú.
+2.Ki kérhet engedélyt barlangtúrára és honnan kell kérnie?
+Bárki beadhatja a kérelmet, viszont csoport nevében csak az arra jogosult személy aláírásával lehet benyújtani. Engedély az illetékes nemzeti parktól kérhető
+
+3.Milyen barlangász csoportokat különböztetünk meg céljaik szerint?
+-Kutató cs.
+-Sport barlangász cs.
+-Ideiglenes társulások (összefogások közös célból, munkamegbízásból)
+-Egyéb: Oktatási Szakosztály, Barlangi Mentőszolgálat
+
+4.Hogyan épül fel egy barlangász csoport?
+-Csoportvezető 🡪 tapasztalt, irányító
+-Reszortfelelősök 🡪 oktat, túrát vezet (min. T2!)
+-Tagok
+
+5.Mi a szerepe az MKBT-nek a barlangászok életében? 
+Szervezett barlangkutató csoportok, barlangászok összefogása és képviselete (+küldöttközgyűlések, kiadványok, rendezvények szervezése)
+
+6.Mely állami szervezetek foglalnak helyet a barlangokkal?
+-Illetékes nemzeti park
+-Barlangtani és Földtani Főosztály
+-Természetvédelmi Őrszolgálat
+
+
+II:
+1. Sorold fel az egyéni alapfelszereléseket!
+Lábbeli, aláöltözet, overall, fejvédő, lámpa, kesztyű, térd-, könyökvédő, EÜ csomag
+
+
+2. Milyen elvárásoknak kell megfeleljen a barlangban használt sisak? 
+Legyen kényelmes, fejméretre állítható, minél jobban fedje a fejet, könnyen kezelhető csatja legyen, legyen rajta fül a lámpa rögzítéséhez, UIAA minősített Y-szíjjal ellátott legyen
+
+
+3. Mit nevezünk „kontakt zónának”?
+Sisak héja és a fejre illeszkedő rész közötti tér 🡪 mindig szabadon kell hagyni!
+
+
+ 4. Hasonlítsd össze a különböző világítás típusokat! 
+-Karbid l.: (Ca-karbid+víz=erős sárga fény)
+előny: meleg, helyszínen javítható, barlangban újratölthető
+hátrány: égőfej tisztítása nehéz, kormoz, vízigényes, karbidot szárazon kell tartani, karbidmeszet el kell takarítani
+-Izzólámpa: (wolframszál+elektromos áram)
+előny: több méret és teljesítmény, olcsó, fényük=élettartamuk, max fényerejüket azonnal elérik
+hátrány: rövid élettartam, akkumulátorról működtetve rövid üzemidő
+-Fénycsöves l.: (gázkisüléssel világít)
+előny: változatos színek, hosszabb élettartam, nem pontszerű fényforrás (kevésbé zavaró)
+hátrány: nagy méretű, nagy akkumulátor, törékeny
+-LED l.: (elektronok+elektromos áram)
+előny: alacsony áramerősség és fogyasztás, alacsony feszültséggel működik, hosszú élettartam, kis helyen szerelhető
+hátrány: a nagy teljesítményűek drágák, házilag nehéz előállítani
+
+
+5. Ismertesd a fő- és a mellékvilágítással kapcsolatos követelményeket! 
+Egyszerűen kezelhető, megbízható, elég fényt nyújtó egymástól független fényforrások legyenek. Fő: tervezett barlangidő1,5X bírja, Mellék: tervezett barlangidő 2/3-át bírja
+(min túraidő: 4 óra)
+
+
+6. Sorold fel az egyéni kiegészítő felszereléseket! 
+Beülő, központi maillon, ereszkedőgép (csigás), mászógépek 🡪 mellgép, kézi mászógép, (bokára szerelhető mászógép); lépőszár, kantár, mellheveder, bag-húzó heveder, karabinerek
+
+
+7. Milyen tulajdonságai vannak egy barlangban jól használható beülőnek?
+Derékhevedere 2 fülben végződik (maillonnal csatoljuk össze), köztes pont felső része köldök alatt van (minél lejjebb legyen a bekötőpont!), folyamatos, statikus terhelésre van tervezve
+
+
+8. Mi a legfőbb ismérve egy barlangban használatos ereszkedőgépnek?
+Síkban töri a kötelet, a mozgási energiát hőenergiává alakítja, így lassítja az ereszkedést.
+
+
+ 9. Milyen körülmények közt akasztjuk le a lépőszárat a kézgépről vagy a hosszúkantárról, ha még nem vagyunk gyakorlottak?
+Soha nem akasztjuk le!
+
+
+10. Miből készülhet a kantár? 
+Dinamikus kötélből perec csomóval (6mm-nél nagyobb átmérőjű kötélből), hevederből, gyári verzió
+
+
+11. Mi a mellheveder funkciója?
+Tartja a mellgépet 🡪 terhelt állapotban is tudunk pihenni 
+
+
+12. Milyen karabinereket ismer? Melyiket mire használják?
+ -D-alakú, OK(ovális) karabiner (3 mozdulatos bajonettzáras): ereszkedőgép maillonhoz kapcs.
+-záras D, záras OK: hosszú kantárba
+-D-alakú sima: rövid kantárba 🡪 30kN teherbírásút könnyebb akasztani bevezetőszárba, majomhídba, megosztásba
+-fékezőkarabiner 🡪 sima acél OK, RAUMER
+
+
+13. Mit tartalmaz a csoportfelszerelés? 
+Kötéltechnikához beszerelő felszerelés: nittelős kis-bag, köteles bag, kötél, nittfülek, karabinerek 
+
+
+14. Milyen hosszú az ideális rövid kantár? 
+A megfelelő méret poignée feje+croll+karabiner. Ez nagyjából 44cm (+-2cm)
+
+
+15. Hogyan kell beállítani a lépcsőszár hosszát? 
+Egyénhez kell igazítani, belelógva elérje a poa tetejét
+
+
+16. Mit jelent az, hogy egy kötél statikus? 
+Kisebb nyúlású kötél (<5%), barlangban való közlekedésre alkalmas, nagyobb teherbírású
+
+
+17. Hogyan kezeljük a köteleinket a barlangban és azon kívül? 
+Első használat előtt és használatok után mossuk ki, sérüléseket ellenőrizzük, óvjuk: savtól, lúgtól, UV-től, éles felületektől, súrlódástól, égéstől (ne ereszkedjünk gyorsan!), vízfelvétel minimalizálása barlangban, sérült részt vágjuk ki, száraz helyen babázva tároljuk, bagelve/babázva szállítjuk
+
+
+18. Hogyan tartsuk karban az egyéni felszereléseinket?
+Használat után mossuk el őket, sérülések keletkezését ellenőrizzük, agyagtól megtisztítjuk, izolációs fóliát cserélni kell, ha nedvesség éri és nem volt megszárítva, neoprén nem lehet napon
+
+
+19. Körülbelül mekkora a barlangász kötelek teherbírása (szakítószilárdsága)? 
+válasz: 18-28kN (?)
+
+
+20. Mennyi időnként és hogyan kell tisztítani a köteleket? 
+Minden használat után el kell mosni, hideg vízben, vegyszer nélkül, mosás közben átnézzük sérült-e
+
+
+21. Milyen típusú és vastagságú kötelet kell alkalmazni a kantárnak? Miért? 
+válasz: 9-10,5mm-es dinamikus kötélből, esés során nyúlékonysága miatt csökk. a testre jutó erőhatás
+
+
+22. Milyen típusú és vastagságú kötelet kell alkalmazni pruszikzsinórnak? 
+válasz: 7mm-es vagy kisebb kötelek (félkötél), statikus kötél
+Pruszikoláshoz a főkötél átmérőjének kb a fele!
+
+
+23. Milyen anyagból készülnek a karabinerek? Melyiket mi jellemzi?
+-alumínium 🡪 könnyebb, jobban kopik, nem rozsdásodik, kevésbé hőálló
+-acél 🡪 jobb kopásállóság pl: fékezőkarabinernek csak ilyet!, drágább, ha nem rozsdamentes rozsdásodik, jobb hőállóság
+(-titán) 
+
+
+24. Milyen karabinerzárakat ismersz? 
+zárnélküli, csavarzáras, bajonettzáras (2 vagy 3 mozdulatos), automata záras
+
+
+25. Csoportosítsd a karabinereket alakjuk szerint! 
+D-alakú, OK(ovális), háromszög, hajlított nyelvű, (RAUMER típusú fékezőkarabiner)
+
+
+26. Miért különböznek egymástól a sziklamászó és a barlangász beülőhevederek? 
+Más a feladatuk, a sziklamászóké dinamikus terhelésre van tervezve pl esés, míg a barlangászoké folyamatos statikus terhelésre alkalmas (kötélen végig benne ülünk)
+
+
+27. Miért és hogyan kell a felszerelésünket karbantartani?
+Használat után el kell mosni őket, hogy az esetleges sérüléseket észrevegyük és hogy az agyag anyag amortizáló hatását kiküszöböljük
+
+
+III.
+1. Mit nevezünk barlangtúrának?
+Olyan sportcélú barlangjárás, amely időtartama meghaladja a fél órát
+
+
+2. Mennyi a barlangi túra minimális létszáma? Miért? Milyen esetekben lehet ettől eltérni? 
+válasz: 4 fő, hogy ha egy ember megsérül egy lent tudjon maradni vele, míg a másik kettő a felszínre siet értesíteni a Barlangi Mentőszolgálatot
+Kivétel: 
+-3fő: ha a barlang bármely pontjáról könnyű útvonalon ki lehet jutni és a túrázók jól ismerik a barlangot
+-2fő: ha több egymást követő max 1 órás időközönként követő csapat mozog ua. útvonalon (az utolsó csapatra nem érvényes!)
+
+
+3. Milyen személyi feltételeket kíván meg a barlangtúra? 
+fizikailag, egészségileg, mentálisan alkalmas legyen a túrára, kövesse a túravezető utasításait, felelősségteljes viselkedés, vigyáz a barlang formakincseire, megfelelő felszerelése van, tartja a sorrendet, nem hagyja el a csoportot, nem hagyja el és segíti a mögötte jövőt
+
+
+4. Mi a barlangjárás három alapelve? 
+- Legnagyobb biztonság elve
+- Célok és lehetőségek összhangja
+- A túravezető egyszemélyi felelőssége
+
+
+5. Mi jelent a legnagyobb biztonság elve? 
+A túrát úgy kell megtervezni, előkészíteni, lebonyolítani, hogy egy esetleges baleset bekövetkeztének esélye minimális legyen
+
+
+6. Mi a célok és lehetőségek összhangjának elve? 
+A túra előkészítése során még lehetnek a célok az elsődlegesek, de a lebonyolítási szakaszban már a rendelkezésre álló erőforrások határozzák meg a lehetőségeinket, és a célokat ehhez kell igazítani.
+
+
+7. Mit jelent a túravezető egyszemélyi felelőssége?
+Mivel ő van abban a helyzetben, hogy meg tudja ítélni az erőforrásokat, lehetőségeket, kockázatokat, ő van abban a helyzetben, hogy döntéseket hozzon.
+
+
+8. Melyek a túravezető, illetve a túrázók jogai és kötelességei? 
+A túrázónak joga van részt venni/ nem venni részt a túrán, köteles a túravezető utasításait betartani, azonnal meg kell adnia minden információt a túravezetőnek, ami a túrát érintheti.
+A túravezetőnek joga van a túrából alkalmatlansága miatt bárkit kizárni és a túra célját, útvonalát akár menet közben is módosítani.
+
+
+9. Melyik a 6 leggyakrabban használt csomó? Melyiket mire használjuk? 
+-perecfül cs.: megosztásban, elhúzásban, sérült kötélrész kikötésére, majomhídban, kantár végén, (szembe fűzve 🡪 egész kötélből kötött gyűrű megkötéséhez)
+-bulin cs.: kötél indításához (kikötési pontokban duplabulint)
+-8-as cs.: félszorító nyolcas 🡪 kötélen ereszkedéshez, felső biztosításhoz, kötélhíd feszítéséhez, ereszthető kikötés létesítéséhez; szorító nyolcas 🡪 kötél pozícionálása fáról indításkor, tárgyak megkötése felhúzáskor, eresztéskor, majomhídban
+-pruszik cs.: ereszkedés biztosítása, (régen kötélen való felmászáshoz)
+-angol mentőcsomók és duplabulin: főleg dupla kikötési pontokban
+pillangó cs.: sérült kötélszakasz kikötésére
+
+
+10. Mi a bevezetőszár szerepe? 
+A veszélyzónában található kötélszakasz biztonságos megközelítését teszi lehetővé (jó példa az önbiztosításra)
+
+
+11. Mi a biztonságtechnika és mi a biztosítás?
+Biztosítás: mindazon eljárások összessége, amelyek a lezuhanást akadályozzák vagy a már bekövetkezett zuhanás következményeit csökkentik
+Biztonságtechnika: minden eljárás, szabály és felszerelés, ami a biztonságos barlangászatot szolgálja
+
+
+12. A biztosításnak milyen változatait ismered?
+-Defenzív bizt. (testileg, pszichésen, információval)
+-Önbiztosítás
+-Társbiztosítás
+
+
+13. Mi a defenzív biztosítás célja, mik lehetnek a hibái? 
+Cél: a barlangban való balesetmentes közlekedés elérése alacsonyabb magasságokban, kisebb mászási nehézségeknél, gyors dinamikus haladás lehetővé tétele, biztonság nyújtása
+Hibák: biztosító nincs ott fejben, instabil/terheletlen támasztékot nyújt, nem túlzott veszélyérzet mesterséges csökkentése, a biztosító túlhangsúlyozza a saját szerepét (kudarc élményt okoz a másiknak)
+
+
+14. Mikor kell alkalmazni a defenzív biztosítást? 
+Minden olyan helyzetben, ahol a túravezető indokoltnak tartja/túrázó kéri. Alacsonyabb magasságokban, kisebb mászási nehézségeknél, gyors dinamikus, biztonságos haladás érdekében
+
+
+15. Mikor kell alkalmazni önbiztosítást? 
+Minden olyan helyzetben, ahol a túravezető indokoltnak tartja/túrázó kéri. Nagymagasságú kitett helyeken, ahol bármilyen előreláthatatlan esemény következtében be lehet esni egy aknába = veszélyzónák esetében
+
+
+16. Mely ereszkedőgépek használata esetén kell önbiztosítást alkalmazni? 
+Nem önzáró ereszkedő eszközök használatakor! (szimplacsiga, xilofon, félszorító 8-as cs.)
+
+
+17. Miért nem lehet önbiztosítással használni a Stopereszkedő eszközt?
+A Stopos ereszkedő önmagában, beavatkozás nélkül lefékez és megtart. Ha stop alá kötöd az önbiztosítást bele tud terhelődni ereszkedéskor 🡪 beleterhelve nem tudod oldani (?)
+
+18 Milyen eszközöket lehet használni önbiztosításhoz?
+pruszikcsomó, shunt, kantár, fogas kézi mászógép, (croll)
+
+19. Vízszintes kötélhídon miért nem alkalmas egymagában a mászógép (Poignée) biztosításra?
+Mert a mászógépünket a kötél irányától eltérő irányba is érheti terhelés, így ilyenkor a hosszúkantár karabinerét a mászógéphez + a fő kötélhez is csatlakoztatjuk, hogy megelőzzük a poa és a kötél sérülését
+
+20. Mi a különbség a statikus és a dinamikus biztosítás között?
+Statikusnál az esés energiáját szinte teljese egészében a kötél nyúlása nyeli el, míg dinamikusnál az esés során a kötél megcsúszik a biztosítóeszközben és a súrlódás révén nyelődik el az energia nagy része (elölmászóknak dinamikusat!)
+
+21. Milyen eszközökkel lehet alulról, illetve felülről társbiztosítani?
+Alulról: dinamikus bizt. 🡪 lapka, verso, reverso, félszorító csomó (8-as dinamikus bizt., de elölmászó biztosítására nem ad elég fékerőt!)
+Felülről: statikus bizt. 🡪 stopcsiga, grigri, kötéllel vállbiztosítás mellbekötéssel (rövid ideig csak!)
+
+22. Milyen esetben szabad statikus kötéllel biztosítani?
+Felső- és oroszbiztosításkor
+
+23. Általában miért nem alkalmas biztosításra a statikus kötél?
+Mivel összesen 3%-os nyúlása van, így túl nagy erők lépnének föl esés során
+
+24. Mi a stand? Mikor kell alkalmazni?
+A biztosítás kiindulópontja, többszörösen rögzített robosztus fixpont amely minden elképzelhető erőhatást/rántást el kell tudjon bírni. A biztosító személy biztosítás során ehhez rögzíti magát (önbiztosításra használja)
+
+25. Kötélbe történő beleeséskor mely tényezőktől függ a kötélben ébredő erő nagysága?
+Az esés hosszának(h) és az eséstől megfeszülő kötélhossz(l) hányadosától függ 🡪 eséstényező=h/l
+ 
+26. Melyik tényezőnek van kitüntetett szerepe és miért?
+Az megfeszülő kötélhossz(l), mert egy hosszú kötelet megrántó nagyobb esés kevésbé veszélyes, mint egy kisebb zuhanás, amely energiáját egy rövidebb kötél nyeli el (rövidebb kötél=nagyobb eséstényező)
+
+27. Mi az esésviszony? Ismertesd részletesen a jelentőségét!
+Az esés hosszának és az esést megtartó kötél (kantár vagy biztosítókötél) hányadosa (=eséstényező). Ahhoz, hogy eséskor a rántás minél kisebb legyen, az eséstényezőnek is minél kisebbnek kell lennie. Értéke 0-2 lehet a standok és köztesek elhelyezkedésétől függően. 2🡪 az ekkor keletkező lgn. kötélerő=maximális megtartási rántás (ennél nagyobb erő csak viaferratanál fordul elő) Minél nagyobb, annál súlyosabb sérülések (gerinc) lehetnek, nagyobb eséllyel szakadhatnak ki nittfülek (?)
+
+28. Rajzolj példát 2-es esésviszonyra!
+
+29. Általában milyen értékeket vehet fel az esésviszony?
+válasz: 0-2-ig, de a gyakorlatban 1,72-nél nem nagyobb (a 2 elméleti érték) a kötelet is e szerint az érték szerint gyártják
+
+30. Miképpen keletkezhet 2-nél nagyobb esésviszony?
+Ha a kantárod hosszának kétszeresénél magasabbra mászol a kötélen, de még nem vagy a következő biztosítási pontnál és onnan esel le (viaferrátában) 
+
+31. Mit nevezünk objektív és szubjektív veszélyforrásoknak?
+Objektív: környezeti (embertől független, csak a barlangi környezet jellegéből adódik)
+Szubjektív: emberi adottságokból származnak
+
+32. Melyek az objektív veszélyforrások főbb csoportjai?
+Sötétség, terepi sajátosságok, barlang klimatikus viszonyai (levegő szárító hatása, CO2), kötött visszatérés, mentés nehézségei, felszíni veszélyforrások és a felszíni klimatikus viszonyok
+ 
+33. Ismertesd részletesen a klimatikus viszonyokkal összefüggő veszélyforrásokat!
+hideg (Mo.-n kb 10 C°), ember felmelegíti a barlangi levegőt 🡪 levegő relatív páratartalma alacsony lesz 🡪 szárító hatás, mérgesgázok (CO2), árvízveszély, kijárat befagyhat/behavazódhat
+KIHÜLÉS
+34. Mit jelent a kötött visszatérés?
+A kijárat az egyetlen hely, ahol el lehet hagyni a barlangot, a túrát nem lehet bárhol, bármikor megszakítani
+
+35. Sorold fel a szubjektív veszélyforrásokat!
+egyéni- és közösségbeli hiányosságok, anyagi hiányosságok, idő elégtelensége, információhiány, téves információ, hibás döntések tömegvonzása
+
+36. Veszélyesebb-e éjjel barlangászni, mint nappal? Miért?
+A barlangon belül nincs érdemi különbség, baleset esetén éjszaka lassabban és kevesebb ember mozgósítható, a barlang megközelítése sötétben nehezebb, este az emberek fáradtabbak, dekoncentráltabbak lehetnek  
+
+37. Ismertesd a véletlen szerepét a szubjektív veszélyforrások között!
+Egyidejűleg több szabály apró áthágása és egy véletlen szituáció beindíthatja a balesethez vezető események láncolatát 🡪 hibás döntések tömegvonzása
+
+38. Melyek az erőforrások főbb csoportjai?
+Felszerelés, idő, emberi erőforrások (fizikai-, mentális állapot stb.), közösségi erőforrások (együttműködés, összhang, mindenki tarja magát a szerepéhez), információ
+
+39. Beszélj az információ és idő erőforrások jelentőségéről!
+A kevés/téves információ váratlan körülményeket és veszélyeket eredményez és ez növeli a kiszolgáltatottságot (erőforrásokat felemészti), plusz időt von el a tervezett történésekhez képest
+A kevés idő kapkodáshoz vezethet, a kevés pihenőidő pedig fáradtsághoz.
+40. Sorold fel az emberi erőforrásokat!
+Tapasztalat, ismeretek, technikai tudás, egészségügyi/testi alkalmasság, jó fizikai és fiziológiai állapot, megfelelő lelki állapot, megfelelő döntések
+Létszám, csapatszellem, egyéni képességek.
+
+41. Ismertesd részletesen az erőforrások elméletét!
+Az emberi veszélyforrások az ember által felhalmozott erőforrások hiányosságaiból adódnak. A biztonságos barlangászathoz a rendelkezésre álló (emberi, technikai, időbeli, környezeti, közösségi) erőforrások megfelelő beosztása és felhasználása szükséges (?)
+A barlangi túra során az erőforrások változnak, az emberi, anyagi- technikai, idő esetében
+általában rosszabbodik a helyzet, az informáltság az egyetlen, ami a túra során javul.
+
+42. Milyen eszközök segítik a felszíni tájékozódás?
+GPS, turistatérképek, topográfiaitérképek, tájfutó térképek, tájoló, iránytű
+
+43. Mire használható a GPS?
+Néhány méteres pontosságú helymeghatározásra, a megadott koordinátához navigál + vissza
+
+44. Miért érdemes iránytűt vagy tájolót vinni a felszínre és a barlangba?
+Használatával helyes irányba tudjuk beforgatni a térképünket. Ha eltévedünk az iránytű segítségével (is) vissza tudunk jutni oda, ahonnan indultunk
+
+45. Mit nevezünk eltévedésnek, és mit tegyünk eltévedés esetén?
+Az eredetileg keresett út/cél elvesztése = eltévedés. Eltévedés során próbáljunk visszamenni az utolsó álláspontra, ahol a helyzetünket ismertük.
+
+46. Mi a különbség az alaprajz, a kiterített és a vetített hosszszelvény között?
+Az alaprajz a barlang vízszintes vetülete, amelyet leginkább horizontális kiterjedésű barlangok ábrázolására használnak. 
+A vetített hosszmetszet a barlang egy függőleges síkba eső vetülete, míg a kiterített hosszmetszet az egymást térben takaró szakaszok ábrázolását is lehetővé teszi. Mindkettő vertikális kiterjedésű barlangok ábrázolására alkalmas (+ a kiterített horizontálishoz, belmagasság szemléltetéséhez)
+
+47. Hogyan jelölhetjük utunkat a visszatéréshez a barlangban?
+Prizmák lerakásával, jelzőszalag, ideiglenes „kőbaba” elhelyezésével
+
+48. Hogyan jelölik a térképek az egyes járatszinteket?
+Különféle kontúrral különítik el őket
+
+49. Milyen adatokat kell feltüntetni barlangtérképeken?
+A barlang/barlangszakasz nevét, az (északi) iránynak, a méretaránynak/vonalas léptéknek, bejáratoknak, a felmérés dátumának, a felmérő nevének feltűntetése kötelező (+ egységes jelkulcsok)
+
+50. Mit nevezünk a barlang hosszának, illetve mélységének?
+Hosszúsága: a barlang ismert járatainak hosszúsága, gyakorlatilag ez a poligon hossza
+Mélysége: a barlang vertikális kiterjedése, tehát a barlang ismert legmagasabb és legmélyebb pontja közötti szintkülönbség (tekintet nélkül arra, hogy hol a bejárata a barlangnak)

@@ -1,9 +1,10 @@
 (function(){
-  const nav = [
-    { href: "./index.html", label: "Teszt" },
-    { href: "./learn.html", label: "Tanuló mód" },
-    { href: "./admin.html", label: "Szerkesztő" },
-  ];
+const nav = [
+  { href: "./index.html", label: "Teszt" },
+  { href: "./mcq.html", label: "MCQ" },        // <-- add this
+  { href: "./learn.html", label: "Tanuló mód" },
+  { href: "./admin.html", label: "Szerkesztő" },
+];
 
   const headerHtml = `
     <div class="topbar">
@@ -41,6 +42,8 @@
   const KEY = "theme";
   const root = document.documentElement;
   const btn = document.getElementById("themeToggle");
+
+
 
   function apply(theme){
     if (theme === "light"){

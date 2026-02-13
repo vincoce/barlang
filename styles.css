@@ -276,3 +276,16 @@ select{
 }
 
 code{ color: color-mix(in srgb, var(--accent) 55%, var(--text)); }
+
+.thinkBar{
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 35%, var(--surface));
+  overflow: hidden;
+}
+.thinkBar__fill{
+  height: 100%;
+  width: 0%;
+  background: color-mix(in srgb, var(--accent) 70%, var(--ok));
+  transition: width 80ms linear;
+}

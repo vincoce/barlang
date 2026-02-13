@@ -179,24 +179,30 @@
     }
 
     function pickNext(){
-      const items = poolItems();
-      if (!items.length) return null;
+  const items = poolItems();
+  if (!items.length) return null;
 
-      const mode = document.getElementById("modeSelect").value;
-      if (mode === "random"){
-        return items[Math.floor(Math.random() * items.length)];
-      }
-      return App.weightedPick(items, it => App.computeWeight(progress, it.id));
-    }
+  const mode = document.getElementById("modeSelect").value;
+
+  // keep "random" mode if you want
+  if (mode === "random"){
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  // NEW: Leitner SRS
+  return App.pickNextSrs(items, progress);
+}
 
     function updateGlobalStats(){
-      const items = poolItems();
-      let mastered = 0;
-      for (const q of items){
-        if (progress[q.id]?.mastered) mastered++;
-      }
-      document.getElementById("globalStats").textContent = `Mastered: ${mastered}/${items.length}`;
-    }
+	  const items = poolItems();
+	  const c = App.srsCounts(items, progress);
+	  let mastered = 0;
+	  for (const q of items){
+		if (progress[q.id]?.mastered) mastered++;
+	  }
+	  document.getElementById("globalStats").textContent =
+		`Due: ${c.due}/${c.total} · New: ${c.newCount} · Mastered: ${mastered}/${c.total}`;
+	}
 
     function updateQuestionStatus(){
       const badge = document.getElementById("qStatus");
@@ -262,8 +268,12 @@
       scoreEl.className = "score " + (score.pct >= App.MASTERY_PCT ? "ok" : "bad");
 
       App.updateProgress(progress, currentItem.id, score);
-      updateQuestionStatus();
-      updateGlobalStats();
+
+// SRS: success if above mastery threshold
+App.srsApplyResult(progress, currentItem.id, score.pct >= App.MASTERY_PCT);
+
+updateQuestionStatus();
+updateGlobalStats();
     }
 
     function hint(){
